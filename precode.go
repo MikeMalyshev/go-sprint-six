@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -51,7 +53,7 @@ func getTasks(response http.ResponseWriter, request *http.Request) {
 
 	_, err = response.Write(body)
 	if err != nil {
-		http.Error(response, err.Error(), http.StatusInternalServerError)
+		log.Printf("response writing error: %s\n", err.Error())
 		return
 	}
 }
@@ -75,7 +77,7 @@ func getTask(response http.ResponseWriter, request *http.Request) {
 
 	_, err = response.Write(body)
 	if err != nil {
-		http.Error(response, err.Error(), http.StatusInternalServerError)
+		log.Printf("response writing error: %s\n", err.Error())
 		return
 	}
 }
@@ -114,8 +116,13 @@ func deleteTask(response http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	r := chi.NewRouter()
+	file, err := os.OpenFile("precode.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal("Failed to open log file:", err)
+	}
+	log.SetOutput(file)
 
+	r := chi.NewRouter()
 	r.Get("/tasks", getTasks)
 	r.Get("/task/{id}", getTask)
 	r.Post("/tasks", addTask)
