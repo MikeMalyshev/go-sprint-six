@@ -128,7 +128,7 @@ func main() {
 	r.Post("/tasks", addTask)
 	r.Delete("/tasks/{id}", deleteTask)
 
-	err := http.ListenAndServe(":8080", r)
+	err = http.ListenAndServe(":8080", r)
 	if err != nil {
 		fmt.Printf("Ошибка при запуске сервера: %s", err.Error())
 		return
