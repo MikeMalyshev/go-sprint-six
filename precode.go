@@ -10,10 +10,10 @@ import (
 )
 
 type Task struct {
-	ID          string   `json:"id"`          // ID задачи
-	Description string   `json:"description"` // Заголовок
-	Note        string   `json:"note"`        // Описание задачи
-	Application []string `json:"application"` // Приложения, которыми будете пользоваться
+	ID           string   `json:"id"`
+	Description  string   `json:"description"`
+	Note         string   `json:"note"`
+	Applications []string `json:"applications"`
 }
 
 var tasks = map[string]Task{
@@ -21,7 +21,7 @@ var tasks = map[string]Task{
 		ID:          "1",
 		Description: "Сделать финальное задание темы REST API",
 		Note:        "Если сегодня сделаю, то завтра будет свободный день. Ура!",
-		Application: []string{
+		Applications: []string{
 			"VS Code",
 			"Terminal",
 			"git",
@@ -31,7 +31,7 @@ var tasks = map[string]Task{
 		ID:          "2",
 		Description: "Протестировать финальное задание с помощью Postmen",
 		Note:        "Лучше это делать в процессе разработки, каждый раз, когда запускаешь сервер и проверяешь хендлер",
-		Application: []string{
+		Applications: []string{
 			"VS Code",
 			"Terminal",
 			"git",
@@ -48,7 +48,12 @@ func getTasks(response http.ResponseWriter, request *http.Request) {
 	}
 	response.Header().Set("Content-Type", "applications/json")
 	response.WriteHeader(http.StatusOK)
-	response.Write(body)
+
+	_, err = response.Write(body)
+	if err != nil {
+		http.Error(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func getTask(response http.ResponseWriter, request *http.Request) {
@@ -67,7 +72,12 @@ func getTask(response http.ResponseWriter, request *http.Request) {
 	}
 	response.Header().Set("Conten-Type", "application/json")
 	response.WriteHeader(http.StatusOK)
-	response.Write(body)
+
+	_, err = response.Write(body)
+	if err != nil {
+		http.Error(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func addTask(response http.ResponseWriter, request *http.Request) {
@@ -82,6 +92,10 @@ func addTask(response http.ResponseWriter, request *http.Request) {
 	err = json.Unmarshal(buffer.Bytes(), &task)
 	if err != nil {
 		http.Error(response, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if _, ok := tasks[task.ID]; ok {
+		http.Error(response, fmt.Sprintf("ID {%s} allready exists", task.ID), http.StatusBadRequest)
 		return
 	}
 	tasks[task.ID] = task
